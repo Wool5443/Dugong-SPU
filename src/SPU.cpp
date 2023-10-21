@@ -11,7 +11,16 @@ struct SPU
     double* RAM;
     double regs[regNum];
     const byte* codeArray;
-    size_t ip;
+    uint64_t ip;
+};
+
+enum Register
+{
+    rax = 1,
+    rbx = 2,
+    rcx = 3,
+    rdx = 4,
+    rtx = 0,
 };
 
 struct SPUresult
@@ -29,8 +38,7 @@ enum ArgType
 
 struct ArgResult
 {
-    double value;
-    byte argType;
+    double* value;
     ErrorCode error;
 };
 
@@ -103,6 +111,11 @@ SPUresult _SPUinit(const byte codeArray[])
     if (stack.error)
         return {{}, stack.error};
 
+    spu.RAM = (double*)calloc(RAMsize, sizeof(double));
+
+    if (!spu.RAM)
+        return {{}, ERROR_NO_MEMORY};
+
     spu.stack = stack.stack;
     spu.codeArray = codeArray;
     spu.ip = 0;
@@ -124,25 +137,26 @@ ErrorCode _SPUdestructor(SPU* spu)
 ArgResult _getArg(SPU* spu, byte command)
 {
     ArgResult result = {};
-    result.argType = (command & ((byte)~0 << BITS_FOR_COMMAND)) >> BITS_FOR_COMMAND;
 
-    if (result.argType & ImmediateNumberArg)
+    spu->regs[rtx] = 0;
+
+    if (command & (ImmediateNumberArg << BITS_FOR_COMMAND))
     {
-        double tempVal = 0;
-        memcpy(&tempVal, spu->codeArray + spu->ip, sizeof(double));
+        memcpy(&spu->regs[rtx], spu->codeArray + spu->ip, sizeof(double));
         spu->ip += sizeof(double);
-
-        result.value += tempVal;
     }
 
-    if (result.argType & RegisterArg)
+    if (command & (RegisterArg << BITS_FOR_COMMAND))
     {
-        result.value += spu->regs[spu->codeArray[spu->ip]];
+        spu->regs[rtx] += spu->regs[spu->codeArray[spu->ip]];
+        result.value = &spu->regs[spu->codeArray[spu->ip]]; 
         spu->ip++;
     }
 
-    if (result.argType & RAMArg)
-        result.value = spu->RAM[*(uint64_t*)&result.value];
+    if (command & (RAMArg << BITS_FOR_COMMAND))
+        result.value = &spu->RAM[(uint64_t)spu->regs[rtx]];
+    else if (command & (ImmediateNumberArg << BITS_FOR_COMMAND))
+        result.value = &spu->regs[rtx];
 
     result.error = EVERYTHING_FINE;
 
