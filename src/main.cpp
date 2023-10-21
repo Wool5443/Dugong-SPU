@@ -7,20 +7,18 @@ size_t _getFileSize(const char* path);
 
 int main(int argc, const char* argv[])
 {
-    // if (argc == 1)
-    // {
-    //     printf("Input a file to run.\n");
-    //     return ERROR_BAD_FILE;
-    // }
+    if (argc == 1)
+    {
+        printf("Input a file to run.\n");
+        return ERROR_BAD_FILE;
+    }
 
-    // size_t codeArraySize = _getFileSize(argv[1]);
-    size_t codeArraySize = _getFileSize("byteCode.bin");
+    size_t codeArraySize = _getFileSize(argv[1]);
     byte* codeArray  = (byte*)calloc(codeArraySize, 1);
 
     MyAssertSoft(codeArray, ERROR_NO_MEMORY);
 
-    // FILE* binFile = fopen(argv[1], "rb");
-    FILE* binFile = fopen("byteCode.bin", "rb");
+    FILE* binFile = fopen(argv[1], "rb");
 
     fread(codeArray, 1, codeArraySize, binFile);
 
