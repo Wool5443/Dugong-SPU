@@ -1,0 +1,15 @@
+//#define HASH_PROTECTION
+//#define CANARY_PROTECTION
+#include <math.h>
+
+typedef double StackElement_t;
+
+#define STACK_EL_SPECIFIER "%lg"
+
+const size_t STACK_GROW_FACTOR = 2;
+
+const size_t DEFAULT_CAPACITY = 8;
+
+const StackElement_t POISON = 0xFFFFFFFF;
+
+static const char* logFilePath = "log.txt";

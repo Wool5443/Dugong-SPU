@@ -1,0 +1,170 @@
+// COMMAND SET VERSION 6
+
+// DEF_COMMAND(name, num, hasArg, code) 
+
+#define PUSH(val) Push(spu.stack, val)
+#define POP()     Pop(spu.stack)
+
+DEF_COMMAND(PUSH, 1,  true,
+{
+    RETURN_ERROR(PUSH(argResult.value));
+})
+DEF_COMMAND(POP,  2,  true, {})
+DEF_COMMAND(JMP,  3,  true,
+{
+    spu.ip = *(uint64_t*)&argResult.value;
+})
+DEF_COMMAND(JA,   4,  true,
+{
+    StackElementOption b = POP();
+    RETURN_ERROR(b.error);
+
+    StackElementOption a = POP();
+    RETURN_ERROR(a.error);
+
+    if (a.value > b.value)
+        spu.ip = *(uint64_t*)&argResult.value;
+})
+DEF_COMMAND(JAE,  5,  true,
+{
+    StackElementOption b = POP();
+    RETURN_ERROR(b.error);
+
+    StackElementOption a = POP();
+    RETURN_ERROR(a.error);
+
+    if (a.value > b.value || IsEqual(a.value, b.value))
+        spu.ip = *(uint64_t*)&argResult.value;
+})
+DEF_COMMAND(JB,   6,  true,
+{
+    StackElementOption b = POP();
+    RETURN_ERROR(b.error);
+
+    StackElementOption a = POP();
+    RETURN_ERROR(a.error);
+
+    if (a.value < b.value)
+        spu.ip = *(uint64_t*)&argResult.value;
+})
+DEF_COMMAND(JBE,  7,  true,
+{
+    StackElementOption b = POP();
+    RETURN_ERROR(b.error);
+
+    StackElementOption a = POP();
+    RETURN_ERROR(a.error);
+
+    if (a.value < b.value || IsEqual(a.value, b.value))
+        spu.ip = *(uint64_t*)&argResult.value;
+})
+DEF_COMMAND(JE,   8,  true,
+{
+    StackElementOption b = POP();
+    RETURN_ERROR(b.error);
+
+    StackElementOption a = POP();
+    RETURN_ERROR(a.error);
+
+    if (IsEqual(a.value, b.value))
+        spu.ip = *(uint64_t*)&argResult.value;
+})
+DEF_COMMAND(JNE,  9,  true,
+{
+    StackElementOption b = POP();
+    RETURN_ERROR(b.error);
+
+    StackElementOption a = POP();
+    RETURN_ERROR(a.error);
+
+    if (!IsEqual(a.value, b.value))
+        spu.ip = *(uint64_t*)&argResult.value;
+})
+DEF_COMMAND(JF,   10, true,
+{
+    time_t t = time(NULL);
+    struct tm* date = localtime(&t);
+
+    const int FRIDAY = 5;
+
+    if (date->tm_wday == FRIDAY)
+        spu.ip = *(uint64_t*)&argResult.value;
+})
+DEF_COMMAND(IN,   11, false,
+{
+    double val = 0;
+    if (scanf("%lg", &val) != 1)
+        return ERROR_BAD_NUMBER;
+    RETURN_ERROR(PUSH(val));
+})
+DEF_COMMAND(OUT,  12, false,
+{
+    StackElementOption res = POP();
+    RETURN_ERROR(res.error);
+    printf("%lg\n", res.value);
+})
+DEF_COMMAND(ADD,  13, false,
+{
+    StackElementOption b = POP();
+    RETURN_ERROR(b.error);
+
+    StackElementOption a = POP();
+    RETURN_ERROR(a.error);
+
+    RETURN_ERROR(PUSH(a.value + b.value));
+})
+DEF_COMMAND(SUB,  14, false,
+{
+    StackElementOption b = POP();
+    RETURN_ERROR(b.error);
+
+    StackElementOption a = POP();
+    RETURN_ERROR(a.error);
+
+    RETURN_ERROR(PUSH(a.value - b.value));
+})
+DEF_COMMAND(MUL,  15, false,
+{
+    StackElementOption b = POP();
+    RETURN_ERROR(b.error);
+
+    StackElementOption a = POP();
+    RETURN_ERROR(a.error);
+
+    RETURN_ERROR(PUSH(a.value * b.value));
+})
+DEF_COMMAND(DIV,  16, false,
+{
+    StackElementOption b = POP();
+    RETURN_ERROR(b.error);
+
+    StackElementOption a = POP();
+    RETURN_ERROR(a.error);
+
+    RETURN_ERROR(PUSH(a.value / b.value));
+})
+DEF_COMMAND(SQRT, 17, false,
+{
+    StackElementOption a = POP();
+    RETURN_ERROR(a.error);
+
+    RETURN_ERROR(PUSH(sqrt(a.value)));
+})
+DEF_COMMAND(SIN,  18, false,
+{
+    StackElementOption a = POP();
+    RETURN_ERROR(a.error);
+
+    RETURN_ERROR(PUSH(sin(a.value)));
+})
+DEF_COMMAND(COS,  19, false,
+{
+    StackElementOption a = POP();
+    RETURN_ERROR(a.error);
+
+    RETURN_ERROR(PUSH(cos(a.value)));
+})
+DEF_COMMAND(HLT,  0, false, { break; })
+
+#undef PUSH
+#undef POP

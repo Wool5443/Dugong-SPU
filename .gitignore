@@ -1,0 +1,6 @@
+*.json
+*.bin
+*.dug
+*.txt
+*.o
+main
