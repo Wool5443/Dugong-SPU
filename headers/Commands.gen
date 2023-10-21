@@ -1,4 +1,4 @@
-// COMMAND SET VERSION 6
+// COMMAND SET VERSION 7
 
 // DEF_COMMAND(name, num, hasArg, code) 
 
