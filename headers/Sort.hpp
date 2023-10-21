@@ -34,15 +34,6 @@ const void* MinArray(const void* data, size_t elementCount, size_t elementSize, 
 const void* MaxArray(const void* data, size_t elementCount, size_t elementSize, CompareFunction_t* compareFunction);
 
 /**
- * @brief Swaps the raw bytes of a and b.
- * 
- * @param [in] a - pointer to the 1st object.
- * @param [in] b - pointer to the 2nd object.
- * @param [in] size - size of the objects.
-*/
-void Swap(void* a, void* b, size_t size);
-
-/**
  * @brief Sorts the given array according to the Compare Function.
  * Uses randomized quick sort.
  * 
