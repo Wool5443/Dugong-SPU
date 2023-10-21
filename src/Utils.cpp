@@ -50,7 +50,7 @@ unsigned int CalculateHash(const void *key, size_t len, unsigned int seed)
 {
 	const unsigned int m = 0x5bd1e995;
 	const int r = 24;
-	unsigned int l = len;
+	unsigned int l = (unsigned int)len;
 
 	const unsigned char* data = (const unsigned char *)key;
 
@@ -71,10 +71,17 @@ unsigned int CalculateHash(const void *key, size_t len, unsigned int seed)
 
 	switch(len)
 	{
-	case 3: t ^= data[2] << 16u;
-	case 2: t ^= data[1] << 8u;
-	case 1: t ^= data[0];
-	default: break;
+	case 3:
+		t ^= (unsigned int)(data[2] << 16);
+		break;
+	case 2:
+		t ^= (unsigned int)(data[1] << 8);
+		break;
+	case 1:
+		t ^= data[0];
+		break;
+	default: 
+		break;
 	};
 
 	mmix(h,t);
