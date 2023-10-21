@@ -31,7 +31,7 @@ do                                                                              
 {                                                                                        \
     if (error && stack && LOG_FILE)                                                      \
     {                                                                                    \
-        SourceCodePosition _caller = {__FILE__, __LINE__, __func__};                     \                  
+        SourceCodePosition _caller = {__FILE__, __LINE__, __func__};                     \
         _stackDump(LOG_FILE, stack, &_caller, error);                                    \
     }                                                                                    \
 } while (0);
