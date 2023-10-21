@@ -1,4 +1,4 @@
-TARGET=DugongSpu
+TARGET=DugongSPU
 CC=g++
 
 HEADERS=-I./headers/
