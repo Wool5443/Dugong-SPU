@@ -21,14 +21,17 @@ int main(int argc, const char* argv[])
     MyAssertSoft(codeArray, ERROR_NO_MEMORY);
 
     FILE* binFile = fopen(argv[1], "rb");
-
     fread(codeArray, 1, codeArraySize, binFile);
-
-    ErrorCode error = Run(codeArray);
-
-    free(codeArray);
     fclose(binFile);
 
+
+    SPUresult spu = SPUinit(codeArray);
+
+    RETURN_ERROR(spu.error);
+
+    RETURN_ERROR(Run(spu.value));
+
+    free(codeArray);
     return 0;
 }
 

@@ -17,24 +17,24 @@ typedef size_t canary_t;
 struct Stack;
 
 /**
- * @brief Struct that @see StackInit returns. If error is not 0, than @see StackOption::stack = NULL.
+ * @brief Struct that @see StackInit returns. If error is not 0, then @see StackResult::value = NULL.
  * 
- * @var StackOption::stack - pointer to the stack.
- * @var StackOption::error - error message @see ErrorCode.
+ * @var StackResult::value - pointer to the stack.
+ * @var StackResult::error - error message @see ErrorCode.
 */
-struct StackOption
+struct StackResult
 {
-    Stack* stack;
+    Stack* value;
     ErrorCode error;
 };
 
 /**
  * @brief Struct used for pop. If it couldn't pop returns an error and a poison as value.
  * 
- * @var StackOption::value - returned value.
- * @var StackOption::error - error message @see ErrorCode.
+ * @var StackElementResult::value - returned value.
+ * @var StackElementResult::error - error message @see ErrorCode.
 */
-struct StackElementOption
+struct StackElementResult
 {
     StackElement_t value;
     ErrorCode error;
@@ -64,7 +64,7 @@ do                                                                              
     }                                                                                    \
 } while (0);                        
 
-StackOption _stackInit(SourceCodePosition* owner);
+StackResult _stackInit(SourceCodePosition* owner);
 
 /**
  * @brief Destructor of a stack.
@@ -103,6 +103,6 @@ ErrorCode Push(Stack* stack, StackElement_t value);
  * 
  * @return Option containing value and error code.
 */
-StackElementOption Pop(Stack* stack);
+StackElementResult Pop(Stack* stack);
 
 #endif

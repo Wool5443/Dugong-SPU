@@ -98,7 +98,7 @@ static hash_t _calculateStackHash(Stack* stack);
 
 static ErrorCode _stackRealloc(Stack* stack);
 
-StackOption _stackInit(SourceCodePosition* origin)
+StackResult _stackInit(SourceCodePosition* origin)
 {
     Stack* stack = (Stack*)calloc(1, sizeof(Stack));
 
@@ -328,7 +328,7 @@ ErrorCode Push(Stack* stack, StackElement_t value)
     return EVERYTHING_FINE;
 }
 
-StackElementOption Pop(Stack* stack)
+StackElementResult Pop(Stack* stack)
 {
     ErrorCode error = CheckStackIntegrity(stack);
 

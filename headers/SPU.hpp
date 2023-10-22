@@ -5,6 +5,18 @@
 
 typedef unsigned char byte;
 
-ErrorCode Run(const byte codeArray[]);
+struct SPU;
+
+struct SPUresult
+{
+    SPU* value;
+    ErrorCode error;
+};
+
+SPUresult SPUinit(const byte codeArray[]);
+
+ErrorCode SPUdestructor(SPU* spu);
+
+ErrorCode Run(SPU* SPU);
 
 #endif

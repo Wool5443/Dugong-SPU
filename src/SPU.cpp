@@ -8,6 +8,7 @@
 struct SPU
 {
     Stack* stack;
+    Stack* callStack;
     double* RAM;
     double regs[regNum];
     const byte* codeArray;
@@ -21,12 +22,6 @@ enum Register
     rcx = 3,
     rdx = 4,
     rtx = 0,
-};
-
-struct SPUresult
-{
-    SPU value;
-    ErrorCode error;
 };
 
 enum ArgType
@@ -52,23 +47,13 @@ enum Commands
     #undef DEF_COMMAND
 };
 
-SPUresult _SPUinit(const byte codeArray[]);
-
-ErrorCode _SPUdestructor(SPU* spu);
-
 ArgResult _getArg(SPU* spu, byte command);
 
-ErrorCode Run(const byte codeArray[])
+ErrorCode Run(SPU* spu)
 {
-    MyAssertSoft(codeArray, ERROR_NULLPTR);
+    MyAssertSoft(spu, ERROR_NULLPTR);
 
-    SPUresult spuResult = _SPUinit(codeArray);
-
-    RETURN_ERROR(spuResult.error);
-
-    SPU spu = spuResult.value;
-
-    byte command = spu.codeArray[spu.ip++];
+    byte command = spu->codeArray[spu->ip++];
 
     while (true)
     {
@@ -78,7 +63,7 @@ ErrorCode Run(const byte codeArray[])
                 ArgResult argResult = {};                                 \
                 if (hasArg)                                               \
                 {                                                         \
-                    argResult = _getArg(&spu, command);                   \
+                    argResult = _getArg(spu, command);                    \
                     RETURN_ERROR(argResult.error);                        \
                 }                                                         \
                 code                                                      \
@@ -91,47 +76,53 @@ ErrorCode Run(const byte codeArray[])
 
         #undef DEF_COMMAND
 
-        command = spu.codeArray[spu.ip++];
+        command = spu->codeArray[spu->ip++];
     }
-
-    RETURN_ERROR(_SPUdestructor(&spu));
 
     return EVERYTHING_FINE;
 }
 
-SPUresult _SPUinit(const byte codeArray[])
+SPUresult SPUinit(const byte codeArray[])
 {
     if (!codeArray)
-        return {{}, ERROR_NULLPTR};
+        return {NULL, ERROR_NULLPTR};
 
-    SPU spu = {};
+    SPU* spu = (SPU*)calloc(1, sizeof(*spu));
 
-    StackOption stack = StackInit();
+    StackResult stack = StackInit();
 
     if (stack.error)
-        return {{}, stack.error};
+        return {NULL, stack.error};
 
-    spu.RAM = (double*)calloc(RAMsize, sizeof(double));
+    StackResult callStack = StackInit();
 
-    if (!spu.RAM)
-        return {{}, ERROR_NO_MEMORY};
+    if (callStack.error)
+        return {NULL, callStack.error};
 
-    spu.stack = stack.stack;
-    spu.codeArray = codeArray;
-    spu.ip = 0;
-    memset(spu.regs, 0, regNum * sizeof(spu.regs[0]));
+    spu->RAM = (double*)calloc(RAMsize, sizeof(double));
+
+    if (!spu->RAM)
+        return {NULL, ERROR_NO_MEMORY};
+
+    spu->stack = stack.value;
+    spu->callStack = callStack.value;
+    spu->codeArray = codeArray;
+    spu->ip = 0;
+    memset(spu->regs, 0, regNum * sizeof(spu->regs[0]));
 
     return {spu, EVERYTHING_FINE};
 }
 
-ErrorCode _SPUdestructor(SPU* spu)
+ErrorCode SPUdestructor(SPU* spu)
 {
     MyAssertSoft(spu, ERROR_NULLPTR);
 
     free(spu->RAM);
     memset(spu->regs, 0, regNum * sizeof(spu->regs[0]));
 
-    return StackDestructor(spu->stack);
+    RETURN_ERROR(StackDestructor(spu->stack));
+
+    free(spu);
 }
 
 ArgResult _getArg(SPU* spu, byte command)
