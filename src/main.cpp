@@ -7,13 +7,11 @@ size_t _getFileSize(const char* path);
 
 int main(int argc, const char* argv[])
 {
-    // if (argc == 1)
-    // {
-    //     printf("Input a file to run.\n");
-    //     return ERROR_BAD_FILE;
-    // }
-
-    argv[1] = "byteCode.bin";
+    if (argc == 1)
+    {
+        printf("Input a file to run.\n");
+        return ERROR_BAD_FILE;
+    }
 
     size_t codeArraySize = _getFileSize(argv[1]);
     byte* codeArray  = (byte*)calloc(codeArraySize, 1);
