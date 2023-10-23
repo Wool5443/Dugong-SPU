@@ -5,12 +5,14 @@
 #include "SPU.hpp"
 #include "SPUsettings.ini"
 
+static const size_t HIDDEN_REGISTERS_NUMBER = 1;
+
 struct SPU
 {
     Stack* stack;
     Stack* callStack;
     double* RAM;
-    double regs[regNum];
+    double regs[regNum + HIDDEN_REGISTERS_NUMBER];
     const byte* codeArray;
     uint64_t ip;
 };

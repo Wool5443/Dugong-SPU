@@ -100,7 +100,7 @@ DEF_COMMAND(JF, 10, true,
 })
 DEF_COMMAND(CALL, 11, true, 
 {
-    RETURN_ERROR(PUSH_CALL((double)(spu->ip + 1)));
+    RETURN_ERROR(PUSH_CALL((double)(spu->ip)));
     spu->ip = (uint64_t)*argResult.value;
 })
 DEF_COMMAND(RET, 12, false,
