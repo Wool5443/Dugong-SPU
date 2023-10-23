@@ -56,29 +56,36 @@ ErrorCode Run(SPU* spu)
     MyAssertSoft(spu, ERROR_NULLPTR);
 
     byte command = spu->codeArray[spu->ip++];
+    byte commandType = command & ~((byte)~0 << BITS_FOR_COMMAND);
 
     while (true)
     {
-        #define DEF_COMMAND(name, num, hasArg, code, ...)                 \
-        if ((command & ~((byte)~0 << BITS_FOR_COMMAND)) == num)           \
-        {                                                                 \
-                ArgResult argResult = {};                                 \
-                if (hasArg)                                               \
-                {                                                         \
-                    argResult = _getArg(spu, command);                    \
-                    RETURN_ERROR(argResult.error);                        \
-                }                                                         \
-                code                                                      \
-        }                                                                 \
-        else
+        switch (commandType)
+        {
+            #define DEF_COMMAND(name, num, hasArg, code, ...)                 \
+            case num:                                                         \
+            {                                                                 \
+                ArgResult argResult = {};                                     \
+                if (hasArg)                                                   \
+                {                                                             \
+                    argResult = _getArg(spu, command);                        \
+                    RETURN_ERROR(argResult.error);                            \
+                }                                                             \
+                code                                                          \
+                break;                                                        \
+            }                                                                 \
 
-        #include "Commands.gen"
+            #include "Commands.gen"
 
-        /*else*/ return ERROR_SYNTAX;
+            #undef DEF_COMMAND
 
-        #undef DEF_COMMAND
+            default:
+                return ERROR_SYNTAX;
+        }
+
 
         command = spu->codeArray[spu->ip++];
+        commandType = command & ~((byte)~0 << BITS_FOR_COMMAND);
     }
 
     return EVERYTHING_FINE;

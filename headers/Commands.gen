@@ -1,4 +1,4 @@
-// COMMAND SET VERSION 8
+// COMMAND SET VERSION 9
 
 // DEF_COMMAND(name, num, hasArg, code) 
 
@@ -6,6 +6,31 @@
 #define PUSH_CALL(val) Push(spu->callStack, val)
 #define POP()          Pop (spu->stack)
 #define POP_CALL()     Pop (spu->callStack)
+
+#define TWO_ARG_COMMAND(name, num, operation)               \
+DEF_COMMAND(name, num, false,                               \
+{                                                           \
+    StackElementResult b = POP();                           \
+    RETURN_ERROR(b.error);                                  \
+                                                            \
+    StackElementResult a = POP();                           \
+    RETURN_ERROR(a.error);                                  \
+                                                            \
+    RETURN_ERROR(PUSH(a.value operation b.value));          \
+})
+
+#define JUMP_COMMAND(name, num, comparison)                 \
+DEF_COMMAND(name,  num, true,                               \
+{                                                           \
+    StackElementResult b = POP();                           \
+    RETURN_ERROR(b.error);                                  \
+                                                            \
+    StackElementResult a = POP();                           \
+    RETURN_ERROR(a.error);                                  \
+                                                            \
+    if (comparison)                                         \
+        spu->ip = (uint64_t)*argResult.value;               \
+})
 
 DEF_COMMAND(PUSH, 1, true,
 {
@@ -22,72 +47,14 @@ DEF_COMMAND(JMP, 3, true,
 {
     spu->ip = (uint64_t)*argResult.value;
 })
-DEF_COMMAND(JA,  4, true,
-{
-    StackElementResult b = POP();
-    RETURN_ERROR(b.error);
 
-    StackElementResult a = POP();
-    RETURN_ERROR(a.error);
+JUMP_COMMAND(JA,  4, a.value > b.value)
+JUMP_COMMAND(JAE, 5, a.value > b.value || IsEqual(a.value, b.value))
+JUMP_COMMAND(JB,  6, a.value < b.value)
+JUMP_COMMAND(JBE, 7, a.value < b.value || IsEqual(a.value, b.value))
+JUMP_COMMAND(JE,  8, IsEqual(a.value, b.value))
+JUMP_COMMAND(JNE,  9, !IsEqual(a.value, b.value))
 
-    if (a.value > b.value)
-        spu->ip = (uint64_t)*argResult.value;
-})
-DEF_COMMAND(JAE, 5, true,
-{
-    StackElementResult b = POP();
-    RETURN_ERROR(b.error);
-
-    StackElementResult a = POP();
-    RETURN_ERROR(a.error);
-
-    if (a.value > b.value || IsEqual(a.value, b.value))
-        spu->ip = (uint64_t)*argResult.value;
-})
-DEF_COMMAND(JB,  6, true,
-{
-    StackElementResult b = POP();
-    RETURN_ERROR(b.error);
-
-    StackElementResult a = POP();
-    RETURN_ERROR(a.error);
-
-    if (a.value < b.value)
-        spu->ip = (uint64_t)*argResult.value;
-})
-DEF_COMMAND(JBE, 7, true,
-{
-    StackElementResult b = POP();
-    RETURN_ERROR(b.error);
-
-    StackElementResult a = POP();
-    RETURN_ERROR(a.error);
-
-    if (a.value < b.value || IsEqual(a.value, b.value))
-        spu->ip = (uint64_t)*argResult.value;
-})
-DEF_COMMAND(JE,  8, true,
-{
-    StackElementResult b = POP();
-    RETURN_ERROR(b.error);
-
-    StackElementResult a = POP();
-    RETURN_ERROR(a.error);
-
-    if (IsEqual(a.value, b.value))
-        spu->ip = (uint64_t)*argResult.value;
-})
-DEF_COMMAND(JNE, 9, true,
-{
-    StackElementResult b = POP();
-    RETURN_ERROR(b.error);
-
-    StackElementResult a = POP();
-    RETURN_ERROR(a.error);
-
-    if (!IsEqual(a.value, b.value))
-        spu->ip = (uint64_t)*argResult.value;
-})
 DEF_COMMAND(JF, 10, true,
 {
     time_t t = time(NULL);
@@ -125,46 +92,12 @@ DEF_COMMAND(OUT, 14, false,
 
     printf("%lg\n", res.value);
 })
-DEF_COMMAND(ADD, 15, false,
-{
-    StackElementResult b = POP();
-    RETURN_ERROR(b.error);
 
-    StackElementResult a = POP();
-    RETURN_ERROR(a.error);
+TWO_ARG_COMMAND(ADD, 15, +)
+TWO_ARG_COMMAND(SUB, 16, -)
+TWO_ARG_COMMAND(MUL, 17, *)
+TWO_ARG_COMMAND(DIV, 18, /)
 
-    RETURN_ERROR(PUSH(a.value + b.value));
-})
-DEF_COMMAND(SUB, 16, false,
-{
-    StackElementResult b = POP();
-    RETURN_ERROR(b.error);
-
-    StackElementResult a = POP();
-    RETURN_ERROR(a.error);
-
-    RETURN_ERROR(PUSH(a.value - b.value));
-})
-DEF_COMMAND(MUL, 17, false,
-{
-    StackElementResult b = POP();
-    RETURN_ERROR(b.error);
-
-    StackElementResult a = POP();
-    RETURN_ERROR(a.error);
-
-    RETURN_ERROR(PUSH(a.value * b.value));
-})
-DEF_COMMAND(DIV, 18, false,
-{
-    StackElementResult b = POP();
-    RETURN_ERROR(b.error);
-
-    StackElementResult a = POP();
-    RETURN_ERROR(a.error);
-
-    RETURN_ERROR(PUSH(a.value / b.value));
-})
 DEF_COMMAND(SQRT, 19, false,
 {
     StackElementResult a = POP();
@@ -186,9 +119,12 @@ DEF_COMMAND(COS, 21, false,
 
     RETURN_ERROR(PUSH(cos(a.value)));
 })
-DEF_COMMAND(HLT, 0, false, { break; })
+DEF_COMMAND(HLT, 0, false, { return EVERYTHING_FINE; })
 
 #undef PUSH
 #undef POP
 #undef PUSH_CALL
 #undef POP_CALL
+
+#undef TWO_ARG_COMMAND
+#undef JUMP_COMMAND
