@@ -43,7 +43,7 @@ static const char* ERROR_CODE_NAMES[] =
     "ERROR_SYNTAX", "ERROR_WRONG_LABEL_SIZE", "ERROR_TOO_MANY_LABELS",
 };
 
-#define RETURN_ERROR(error)                                                                                         \
+#define RETURN_ERROR(error)                                                                                      \
 do                                                                                                                  \
 {                                                                                                                   \
     __typeof__(error) _error = error;                                                                               \
@@ -51,23 +51,30 @@ do                                                                              
         return _error;                                                                                              \
 } while (0)
 
+#define RETURN_ERROR_RESULT(result, poison)                                                                         \
+do                                                                                                                  \
+{                                                                                                                   \
+    if (result.error)                                                                                              \
+        return {poison, result.error};                                                                             \
+} while (0)
+
 /**
  * @brief Hard assert which tells the file, function and line where the error occurred.
  *
- * @param [in] STATEMENT - the condition to check.
- * @param [in] ERR_CODE - what can happen @see ErrorCode.
- * @param [in] EXIT_CMD - operation to perform before exiting the program.
+ * @param [in] statement - the condition to check.
+ * @param [in] error - what can happen @see ErrorCode.
+ * @param [in] exitCode - code to perform before exiting the program.
  *
  * @note If there is nothing to perform pass nothing.
  */
-#define MyAssertHard(STATEMENT, ERR_CODE, ...)                                                                      \
-if (!(STATEMENT))                                                                                                   \
+#define MyAssertHard(statement, error, ...)                                                                         \
+if (!(statement))                                                                                                   \
 do {                                                                                                                \
     SetConsoleColor(stderr, COLOR_RED);                                                                             \
-    fprintf(stderr, "%s in %s in %s in line: %d\n", #ERR_CODE, __FILE__, __PRETTY_FUNCTION__, __LINE__);            \
+    fprintf(stderr, "%s in %s in %s in line: %d\n", #error, __FILE__, __PRETTY_FUNCTION__, __LINE__);               \
     SetConsoleColor(stderr, COLOR_WHITE);                                                                           \
     __VA_ARGS__;                                                                                                    \
-    exit(ERR_CODE);                                                                                                 \
+    exit(error);                                                                                                    \
 } while(0);
 
 /**
@@ -75,25 +82,49 @@ do {                                                                            
  * 
  * @param [in] VALUE - the thing to transform.
 */
-#define ValueToString(VALUE) #VALUE
+#define ValueToString(value) #value
 
 /**
  * @brief Soft assert which tells the file, function and line where the error occurred.
  *
- * @param [in] STATEMENT - the condition to check.
- * @param [in] ERR_CODE - what can happen @see ErrorCode.
- * @param [in] EXIT_CMD - operation to perform before exiting the program.
+ * @param [in] statement - the condition to check.
+ * @param [in] error - what can happen @see ErrorCode.
+ * @param [in] exitCode - code to perform before exiting the program.
  *
  * @note If there is nothing to perform pass nothing.
+ * 
+ * @return ErrorCode
  */
-#define MyAssertSoft(STATEMENT, ERR_CODE, ...)                                                                      \
-if (!(STATEMENT))                                                                                                   \
+#define MyAssertSoft(statement, error, ...)                                                                         \
+if (!(statement))                                                                                                   \
 do {                                                                                                                \
     SetConsoleColor(stderr, COLOR_RED);                                                                             \
-    fprintf(stderr, "%s in %s in %s in line: %d\n", #ERR_CODE, __FILE__, __PRETTY_FUNCTION__, __LINE__);            \
+    fprintf(stderr, "%s in %s in %s in line: %d\n", #error, __FILE__, __PRETTY_FUNCTION__, __LINE__);               \
     SetConsoleColor(stderr, COLOR_WHITE);                                                                           \
     __VA_ARGS__;                                                                                                    \
-    return ERR_CODE;                                                                                                \
+    return error;                                                                                                   \
+} while(0);                                                                                                         \
+
+/**
+ * @brief Soft assert which tells the file, function and line where the error occurred.
+ *
+ * @param [in] statement - the condition to check.
+ * @param [in] value - the value to form result struct.
+ * @param [in] error - what can happen @see ErrorCode.
+ * @param [in] exitCode - code to perform before exiting the program.
+ *
+ * @note If there is nothing to perform pass nothing.
+ * 
+ * @return Result Struct.
+ */
+#define MyAssertSoftResult(statement, value, error, ...)                                                            \
+if (!(statement))                                                                                                   \
+do {                                                                                                                \
+    SetConsoleColor(stderr, COLOR_RED);                                                                             \
+    fprintf(stderr, "%s in %s in %s in line: %d\n", #error, __FILE__, __PRETTY_FUNCTION__, __LINE__);               \
+    SetConsoleColor(stderr, COLOR_WHITE);                                                                           \
+    __VA_ARGS__;                                                                                                    \
+    return {value, error};                                                                                          \
 } while(0);                                                                                                         \
 
 /**

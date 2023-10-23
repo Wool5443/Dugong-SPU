@@ -12,7 +12,7 @@ struct SPU
     Stack* stack;
     Stack* callStack;
     double* RAM;
-    double regs[regNum + HIDDEN_REGISTERS_NUMBER];
+    double  regs[regNum + HIDDEN_REGISTERS_NUMBER];
     const byte* codeArray;
     uint64_t ip;
 };
@@ -86,23 +86,19 @@ ErrorCode Run(SPU* spu)
 
 SPUresult SPUinit(const byte codeArray[])
 {
-    if (!codeArray)
-        return {NULL, ERROR_NULLPTR};
+    MyAssertSoftResult(codeArray, NULL, ERROR_NULLPTR);
 
     SPU* spu = (SPU*)calloc(1, sizeof(*spu));
+    if (!spu)
+        return {NULL, ERROR_NO_MEMORY};
 
     StackResult stack = StackInit();
-
-    if (stack.error)
-        return {NULL, stack.error};
+    RETURN_ERROR_RESULT(stack, NULL);
 
     StackResult callStack = StackInit();
-
-    if (callStack.error)
-        return {NULL, callStack.error};
+    RETURN_ERROR_RESULT(callStack, NULL);
 
     spu->RAM = (double*)calloc(RAMsize, sizeof(double));
-
     if (!spu->RAM)
         return {NULL, ERROR_NO_MEMORY};
 
@@ -125,10 +121,14 @@ ErrorCode SPUdestructor(SPU* spu)
     RETURN_ERROR(StackDestructor(spu->stack));
 
     free(spu);
+
+    return EVERYTHING_FINE;
 }
 
 ArgResult _getArg(SPU* spu, byte command)
 {
+    MyAssertSoftResult(spu, NULL, ERROR_NULLPTR);
+
     ArgResult result = {};
 
     spu->regs[rtx] = 0;
