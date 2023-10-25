@@ -1,4 +1,4 @@
-// COMMAND SET VERSION 9
+// COMMAND SET VERSION 10
 
 // DEF_COMMAND(name, num, hasArg, code) 
 
@@ -119,6 +119,7 @@ DEF_COMMAND(COS, 21, false,
 
     RETURN_ERROR(PUSH(cos(a.value)));
 })
+DEF_COMMAND(PASS, 22, false, {})
 DEF_COMMAND(HLT, 0, false, { return EVERYTHING_FINE; })
 
 #undef PUSH
