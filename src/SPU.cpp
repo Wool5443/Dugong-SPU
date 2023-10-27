@@ -86,7 +86,7 @@ ErrorCode Run(SPU* spu)
 
 
         command = spu->codeArray[spu->ip++];
-        commandType = command & ~((byte)~0 << BITS_FOR_COMMAND);
+        commandType = (byte)(command & ~((byte)~0 << BITS_FOR_COMMAND));
     }
 
     return EVERYTHING_FINE;
