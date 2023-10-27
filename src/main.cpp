@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <sys/stat.h>
 #include "Utils.hpp"
 #include "SPU.hpp"
@@ -17,9 +18,9 @@ int main(int argc, const char* argv[])
     byte* codeArray  = (byte*)calloc(codeArraySize, 1);
     MyAssertSoft(codeArray, ERROR_NO_MEMORY);
 
-    int width = 80, height = 80;
+    int width = 10, height = 10;
 
-    uint64_t RAMsize = width * height + 2;
+    uint64_t RAMsize = width * height + 4;
     double* RAM = (double*)calloc(RAMsize, sizeof(*RAM));
     MyAssertSoft(RAM, ERROR_NO_MEMORY);
 
@@ -29,19 +30,32 @@ int main(int argc, const char* argv[])
 
     SPUresult spu = SPUinit(codeArray, RAM, RAMsize);
 
-    RETURN_ERROR(spu.error);
-
-    RETURN_ERROR(Run(spu.value));
-    for (int y = 0; y < height; y++)
+    if (spu.error)
     {
-        for (int x = 0; x < width; x++)
+        fprintf(stderr, "%s!!!\n", ERROR_CODE_NAMES[spu.error]);
+        return spu.error;
+    }
+
+    ErrorCode runError = Run(spu.value);
+    if (runError)
+    {
+        fprintf(stderr, "%s!!!\n", ERROR_CODE_NAMES[runError]);
+        return spu.error;
+    }
+
+    if (argc == 3 && strcmp(argv[2], "--print-ram") == 0)
+    {
+        for (int y = 0; y < height; y++)
         {
-            if (RAM[y * height + x])
-                putchar('#');
-            else
-                putchar('.');
+            for (int x = 0; x < width; x++)
+            {
+                if (RAM[y * height + x + 4])
+                    putchar('#');
+                else
+                    putchar('.');
+            }
+            putchar('\n');
         }
-        putchar('\n');
     }
 
     free(codeArray);

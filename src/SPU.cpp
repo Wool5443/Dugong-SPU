@@ -143,7 +143,14 @@ ArgResult _getArg(SPU* spu, byte command)
     }
 
     if (command & (RAMArg << BITS_FOR_COMMAND))
-        result.value = &spu->RAM[(uint64_t)spu->regs[rtx]];
+    {
+        uint64_t index = (uint64_t)spu->regs[rtx];
+        if (index >= spu->RAMsize)
+        {
+            return {NULL, ERROR_INDEX_OUT_OF_BOUNDS};
+        }
+        result.value = &spu->RAM[index];
+    }
     else if (command & (ImmediateNumberArg << BITS_FOR_COMMAND))
         result.value = &spu->regs[rtx];
 
