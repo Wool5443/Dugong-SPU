@@ -13,7 +13,7 @@ struct SPUresult
     ErrorCode error;
 };
 
-SPUresult SPUinit(const byte codeArray[]);
+SPUresult SPUinit(const byte codeArray[], double* RAM, uint64_t RAMsize);
 
 ErrorCode SPUdestructor(SPU* spu);
 

@@ -22,8 +22,10 @@ int main(int argc, const char* argv[])
     fread(codeArray, 1, codeArraySize, binFile);
     fclose(binFile);
 
+    uint64_t RAMsize = 100;
+    double* RAM = (double*)calloc(RAMsize, sizeof(*RAM));
 
-    SPUresult spu = SPUinit(codeArray);
+    SPUresult spu = SPUinit(codeArray, RAM, RAMsize);
 
     RETURN_ERROR(spu.error);
 

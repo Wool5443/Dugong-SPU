@@ -12,6 +12,7 @@ struct SPU
     Stack* stack;
     Stack* callStack;
     double* RAM;
+    uint64_t RAMsize;
     double  regs[regNum + HIDDEN_REGISTERS_NUMBER];
     const byte* codeArray;
     uint64_t ip;
@@ -91,7 +92,7 @@ ErrorCode Run(SPU* spu)
     return EVERYTHING_FINE;
 }
 
-SPUresult SPUinit(const byte codeArray[])
+SPUresult SPUinit(const byte codeArray[], double* RAM, uint64_t RAMsize)
 {
     MyAssertSoftResult(codeArray, NULL, ERROR_NULLPTR);
 
@@ -105,9 +106,8 @@ SPUresult SPUinit(const byte codeArray[])
     StackResult callStack = StackInit();
     RETURN_ERROR_RESULT(callStack, NULL);
 
-    spu->RAM = (double*)calloc(RAMsize, sizeof(double));
-    if (!spu->RAM)
-        return {NULL, ERROR_NO_MEMORY};
+    spu->RAM = RAM;
+    spu->RAMsize = RAMsize;
 
     spu->stack = stack.value;
     spu->callStack = callStack.value;
