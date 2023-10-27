@@ -32,8 +32,6 @@ int main(int argc, const char* argv[])
     RETURN_ERROR(spu.error);
 
     RETURN_ERROR(Run(spu.value));
-    RETURN_ERROR(Run(spu.value));
-    RETURN_ERROR(Run(spu.value));
     for (int y = 0; y < height; y++)
     {
         for (int x = 0; x < width; x++)
