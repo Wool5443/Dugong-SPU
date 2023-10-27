@@ -15,15 +15,15 @@ int main(int argc, const char* argv[])
 
     size_t codeArraySize = _getFileSize(argv[1]);
     byte* codeArray  = (byte*)calloc(codeArraySize, 1);
-
     MyAssertSoft(codeArray, ERROR_NO_MEMORY);
+
+    uint64_t RAMsize = 100;
+    double* RAM = (double*)calloc(RAMsize, sizeof(*RAM));
+    MyAssertSoft(RAM, ERROR_NO_MEMORY);
 
     FILE* binFile = fopen(argv[1], "rb");
     fread(codeArray, 1, codeArraySize, binFile);
     fclose(binFile);
-
-    uint64_t RAMsize = 100;
-    double* RAM = (double*)calloc(RAMsize, sizeof(*RAM));
 
     SPUresult spu = SPUinit(codeArray, RAM, RAMsize);
 
@@ -31,7 +31,20 @@ int main(int argc, const char* argv[])
 
     RETURN_ERROR(Run(spu.value));
 
+    for (int y = 0; y < 10; y++)
+    {
+        for (int x = 0; x < 10; x++)
+        {
+            if (RAM[y * 10 + x])
+                putchar('#');
+            else
+                putchar('.');
+        }
+        putchar('\n');
+    }
+
     free(codeArray);
+    free(RAM);
     return 0;
 }
 
