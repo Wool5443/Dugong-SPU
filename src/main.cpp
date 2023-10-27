@@ -17,7 +17,9 @@ int main(int argc, const char* argv[])
     byte* codeArray  = (byte*)calloc(codeArraySize, 1);
     MyAssertSoft(codeArray, ERROR_NO_MEMORY);
 
-    uint64_t RAMsize = 100;
+    int width = 80, height = 80;
+
+    uint64_t RAMsize = width * height + 2;
     double* RAM = (double*)calloc(RAMsize, sizeof(*RAM));
     MyAssertSoft(RAM, ERROR_NO_MEMORY);
 
@@ -30,12 +32,13 @@ int main(int argc, const char* argv[])
     RETURN_ERROR(spu.error);
 
     RETURN_ERROR(Run(spu.value));
-
-    for (int y = 0; y < 10; y++)
+    RETURN_ERROR(Run(spu.value));
+    RETURN_ERROR(Run(spu.value));
+    for (int y = 0; y < height; y++)
     {
-        for (int x = 0; x < 10; x++)
+        for (int x = 0; x < width; x++)
         {
-            if (RAM[y * 10 + x])
+            if (RAM[y * height + x])
                 putchar('#');
             else
                 putchar('.');
@@ -45,6 +48,7 @@ int main(int argc, const char* argv[])
 
     free(codeArray);
     free(RAM);
+    SPUdestructor(spu.value);
     return 0;
 }
 

@@ -13,7 +13,7 @@ struct SPU
     Stack* callStack;
     double* RAM;
     uint64_t RAMsize;
-    double  regs[regNum + HIDDEN_REGISTERS_NUMBER];
+    double regs[regNum + HIDDEN_REGISTERS_NUMBER];
     const byte* codeArray;
     uint64_t ip;
 };
@@ -40,21 +40,13 @@ struct ArgResult
     ErrorCode error;
 };
 
-enum Commands
-{
-    #define DEF_COMMAND(name, num, ...) \
-    CMD_ ## name = num,
-
-    #include "Commands.gen"
-
-    #undef DEF_COMMAND
-};
-
 ArgResult _getArg(SPU* spu, byte command);
 
 ErrorCode Run(SPU* spu)
 {
     MyAssertSoft(spu, ERROR_NULLPTR);
+
+    spu->ip = 0;
 
     byte command = spu->codeArray[spu->ip++];
     byte commandType = command & ~((byte)~0 << BITS_FOR_COMMAND);
@@ -84,7 +76,6 @@ ErrorCode Run(SPU* spu)
                 return ERROR_SYNTAX;
         }
 
-
         command = spu->codeArray[spu->ip++];
         commandType = (byte)(command & ~((byte)~0 << BITS_FOR_COMMAND));
     }
@@ -97,8 +88,7 @@ SPUresult SPUinit(const byte codeArray[], double* RAM, uint64_t RAMsize)
     MyAssertSoftResult(codeArray, NULL, ERROR_NULLPTR);
 
     SPU* spu = (SPU*)calloc(1, sizeof(*spu));
-    if (!spu)
-        return {NULL, ERROR_NO_MEMORY};
+    MyAssertSoftResult(spu, NULL, ERROR_NO_MEMORY);
 
     StackResult stack = StackInit();
     RETURN_ERROR_RESULT(stack, NULL);
@@ -113,7 +103,6 @@ SPUresult SPUinit(const byte codeArray[], double* RAM, uint64_t RAMsize)
     spu->callStack = callStack.value;
     spu->codeArray = codeArray;
     spu->ip = 0;
-    memset(spu->regs, 0, regNum * sizeof(spu->regs[0]));
 
     return {spu, EVERYTHING_FINE};
 }
@@ -122,10 +111,10 @@ ErrorCode SPUdestructor(SPU* spu)
 {
     MyAssertSoft(spu, ERROR_NULLPTR);
 
-    free(spu->RAM);
-    memset(spu->regs, 0, regNum * sizeof(spu->regs[0]));
+    memset(spu->regs, 0, (regNum + HIDDEN_REGISTERS_NUMBER) * sizeof(spu->regs[0]));
 
     RETURN_ERROR(StackDestructor(spu->stack));
+    RETURN_ERROR(StackDestructor(spu->callStack));
 
     free(spu);
 
