@@ -6,7 +6,7 @@
 
 static size_t _getFileSize(const char* path);
 
-int main(int argc, const char* argv[])
+int main(int argc, const char* const argv[])
 {
     if (argc == 1)
     {
