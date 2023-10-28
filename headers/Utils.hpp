@@ -43,7 +43,7 @@ static const char* ERROR_CODE_NAMES[] =
     "ERROR_SYNTAX", "ERROR_WRONG_LABEL_SIZE", "ERROR_TOO_MANY_LABELS",
 };
 
-#define RETURN_ERROR(error)                                                                                      \
+#define RETURN_ERROR(error)                                                                                         \
 do                                                                                                                  \
 {                                                                                                                   \
     __typeof__(error) _error = error;                                                                               \
@@ -54,8 +54,8 @@ do                                                                              
 #define RETURN_ERROR_RESULT(result, poison)                                                                         \
 do                                                                                                                  \
 {                                                                                                                   \
-    if (result.error)                                                                                              \
-        return {poison, result.error};                                                                             \
+    if (result.error)                                                                                               \
+        return {poison, result.error};                                                                              \
 } while (0)
 
 /**
