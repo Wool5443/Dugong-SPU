@@ -18,22 +18,6 @@ struct SPU
     uint64_t ip;
 };
 
-enum Register
-{
-    rax = 1,
-    rbx = 2,
-    rcx = 3,
-    rdx = 4,
-    rtx = 0,
-};
-
-enum ArgType
-{
-    ImmediateNumberArg = 1,
-    RegisterArg        = 2,
-    RAMArg             = 4,
-};
-
 struct ArgResult
 {
     double* value;
