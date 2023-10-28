@@ -4,7 +4,7 @@
 #include "Utils.hpp"
 #include "SPU.hpp"
 
-size_t _getFileSize(const char* path);
+static size_t _getFileSize(const char* path);
 
 int main(int argc, const char* argv[])
 {
@@ -82,7 +82,7 @@ int main(int argc, const char* argv[])
     return 0;
 }
 
-size_t _getFileSize(const char* path)
+static size_t _getFileSize(const char* path)
 {
     MyAssertHard(path, ERROR_NULLPTR);
 
