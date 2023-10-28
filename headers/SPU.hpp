@@ -5,6 +5,11 @@
 
 typedef unsigned char byte;
 
+enum Flags
+{
+    PrintRam = 1,
+};
+
 struct SPU;
 
 struct SPUresult
