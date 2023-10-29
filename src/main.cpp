@@ -16,37 +16,45 @@ int main(int argc, const char* const argv[])
 
     size_t width = 0, height = 0, ramVars = 0;
 
-    uint flags = 0;
+    bool flags = false;
     if (argc > 2)
     {
+        flags = true;
         for (int i = 2; i < argc; i++)
         {
-            if (strcmp(argv[i], "--print-ram") == 0)
-                flags |= PrintRam;
-            else
-            {
-                sscanf(argv[i], "-w=%zu", &width);
-                sscanf(argv[i], "-h=%zu", &height);
-                sscanf(argv[i], "--vars=%zu", &ramVars);
-            }
+            sscanf(argv[i], "-w=%zu", &width);
+            sscanf(argv[i], "-h=%zu", &height);
+            sscanf(argv[i], "-v=%zu", &ramVars);
+            sscanf(argv[i], "--vars=%zu", &ramVars);
         }
     }
 
     size_t codeArraySize = _getFileSize(argv[1]);
-    byte* codeArray  = (byte*)calloc(codeArraySize, 1);
+    byte* codeArray      = (byte*)calloc(codeArraySize, 1);
     MyAssertSoft(codeArray, ERROR_NO_MEMORY);
-
-    uint64_t RAMsize = width * height + ramVars;
-    double* RAM = (double*)calloc(RAMsize, sizeof(*RAM));
-    MyAssertSoft(RAM, ERROR_NO_MEMORY);
 
     FILE* binFile = fopen(argv[1], "rb");
     MyAssertSoft(binFile, ERROR_BAD_FILE);
 
-    fread(codeArray, 1, codeArraySize, binFile);
+    if (fread(codeArray, 1, codeArraySize, binFile) != codeArraySize)
+        return ERROR_BAD_FILE;
+
     fclose(binFile);
 
-    SPUresult spu = SPUinit(codeArray, RAM, RAMsize);
+    RAMresult ram = {NULL, EVERYTHING_FINE};
+
+    if (flags)
+    {
+        ram = RAMinit(width, height, ramVars);
+
+        if (ram.error)
+        {
+            fprintf(stderr, "%s!!!\n", ERROR_CODE_NAMES[ram.error]);
+            return ram.error;
+        }
+    }
+
+    SPUresult spu = SPUinit(codeArray, ram.value);
 
     if (spu.error)
     {
@@ -61,25 +69,11 @@ int main(int argc, const char* const argv[])
         return spu.error;
     }
 
-    if (flags & PrintRam)
-    {
-        for (int y = 0; y < height; y++)
-        {
-            for (int x = 0; x < width; x++)
-            {
-                if (RAM[y * height + x + ramVars])
-                    putchar('#');
-                else
-                    putchar('.');
-            }
-            putchar('\n');
-        }
-    }
-
     free(codeArray);
-    free(RAM);
     SPUdestructor(spu.value);
-    return 0;
+    RAMdestructor(ram.value);
+
+    return EVERYTHING_FINE;
 }
 
 static size_t _getFileSize(const char* path)

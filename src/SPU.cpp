@@ -9,13 +9,21 @@ static const size_t HIDDEN_REGISTERS_NUMBER = 1;
 
 struct SPU
 {
-    Stack* stack;
-    Stack* callStack;
-    double* RAM;
-    uint64_t RAMsize;
-    double regs[regNum + HIDDEN_REGISTERS_NUMBER];
+    Stack*      stack;
+    Stack*      callStack;
+    RAM*        ram;
+    double      regs[regNum + HIDDEN_REGISTERS_NUMBER];
     const byte* codeArray;
-    uint64_t ip;
+    uint64_t    ip;
+};
+
+struct RAM
+{
+    double* data;
+    size_t width;
+    size_t height;
+    size_t vars;
+    size_t size;
 };
 
 struct ArgResult
@@ -67,7 +75,7 @@ ErrorCode Run(SPU* spu)
     return EVERYTHING_FINE;
 }
 
-SPUresult SPUinit(const byte codeArray[], double* RAM, uint64_t RAMsize)
+SPUresult SPUinit(const byte codeArray[], RAM* ram)
 {
     MyAssertSoftResult(codeArray, NULL, ERROR_NULLPTR);
 
@@ -80,8 +88,7 @@ SPUresult SPUinit(const byte codeArray[], double* RAM, uint64_t RAMsize)
     StackResult callStack = StackInit();
     RETURN_ERROR_RESULT(callStack, NULL);
 
-    spu->RAM = RAM;
-    spu->RAMsize = RAMsize;
+    spu->ram = ram;
 
     spu->stack = stack.value;
     spu->callStack = callStack.value;
@@ -101,6 +108,36 @@ ErrorCode SPUdestructor(SPU* spu)
     RETURN_ERROR(StackDestructor(spu->callStack));
 
     free(spu);
+
+    return EVERYTHING_FINE;
+}
+
+RAMresult RAMinit(size_t width, size_t height, size_t vars)
+{
+    RAM* ram = (RAM*)calloc(1, sizeof(RAM));
+    MyAssertSoftResult(ram, NULL, ERROR_NO_MEMORY);
+
+    size_t size = width * height + vars;
+
+    double* data = (double*)calloc(size, sizeof(*data));
+    MyAssertSoftResult(data, NULL, ERROR_NO_MEMORY);
+
+    ram->data   = data;
+    ram->width  = width;
+    ram->height = height;
+    ram->vars   = vars;
+    ram->size   = size;
+
+    return {ram, EVERYTHING_FINE};
+}
+
+ErrorCode RAMdestructor(RAM* ram)
+{
+    MyAssertSoft(ram, ERROR_NULLPTR);
+
+    free(ram->data);
+
+    free(ram);
 
     return EVERYTHING_FINE;
 }
@@ -129,11 +166,11 @@ ArgResult _getArg(SPU* spu, byte command)
     if (command & (RAMArg << BITS_FOR_COMMAND))
     {
         uint64_t index = (uint64_t)spu->regs[rtx];
-        if (index >= spu->RAMsize)
+        if (index >= spu->ram->size)
         {
             return {NULL, ERROR_INDEX_OUT_OF_BOUNDS};
         }
-        result.value = &spu->RAM[index];
+        result.value = &spu->ram->data[index];
     }
     else if (command & (ImmediateNumberArg << BITS_FOR_COMMAND))
         result.value = &spu->regs[rtx];
