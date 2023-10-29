@@ -71,7 +71,7 @@ int main(int argc, const char* const argv[])
 
     free(codeArray);
     SPUdestructor(spu.value);
-    if (flags) RAMdestructor(ram.value);
+    if (ram.value) RAMdestructor(ram.value);
 
     return EVERYTHING_FINE;
 }
