@@ -20,15 +20,15 @@ struct SPU
 struct RAM
 {
     double* data;
-    size_t width;
-    size_t height;
-    size_t vars;
-    size_t size;
+    size_t  width;
+    size_t  height;
+    size_t  vars;
+    size_t  size;
 };
 
 struct ArgResult
 {
-    double* value;
+    double*   value;
     ErrorCode error;
 };
 
@@ -40,7 +40,7 @@ ErrorCode Run(SPU* spu)
 
     spu->ip = 0;
 
-    byte command = spu->codeArray[spu->ip++];
+    byte command     = spu->codeArray[spu->ip++];
     byte commandType = command & ~((byte)~0 << BITS_FOR_COMMAND);
 
     while (true)
@@ -68,7 +68,7 @@ ErrorCode Run(SPU* spu)
                 return ERROR_SYNTAX;
         }
 
-        command = spu->codeArray[spu->ip++];
+        command     = spu->codeArray[spu->ip++];
         commandType = (byte)(command & ~((byte)~0 << BITS_FOR_COMMAND));
     }
 
@@ -159,7 +159,7 @@ ArgResult _getArg(SPU* spu, byte command)
     if (command & (RegisterArg << BITS_FOR_COMMAND))
     {
         spu->regs[rtx] += spu->regs[spu->codeArray[spu->ip]];
-        result.value = &spu->regs[spu->codeArray[spu->ip]]; 
+        result.value    = &spu->regs[spu->codeArray[spu->ip]]; 
         spu->ip++;
     }
 

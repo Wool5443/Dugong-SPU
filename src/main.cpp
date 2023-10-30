@@ -37,7 +37,12 @@ int main(int argc, const char* const argv[])
     MyAssertSoft(binFile, ERROR_BAD_FILE);
 
     if (fread(codeArray, 1, codeArraySize, binFile) != codeArraySize)
+    {
+        free(codeArray);
+        fclose(binFile);
+        
         return ERROR_BAD_FILE;
+    }
 
     fclose(binFile);
 
@@ -50,6 +55,8 @@ int main(int argc, const char* const argv[])
         if (ram.error)
         {
             fprintf(stderr, "%s!!!\n", ERROR_CODE_NAMES[ram.error]);
+            free(codeArray);
+
             return ram.error;
         }
     }
@@ -59,6 +66,9 @@ int main(int argc, const char* const argv[])
     if (spu.error)
     {
         fprintf(stderr, "%s!!!\n", ERROR_CODE_NAMES[spu.error]);
+        free(codeArray);
+        if (flags) RAMdestructor(ram);
+
         return spu.error;
     }
 
@@ -66,6 +76,10 @@ int main(int argc, const char* const argv[])
     if (runError)
     {
         fprintf(stderr, "%s!!!\n", ERROR_CODE_NAMES[runError]);
+        free(codeArray);
+        SPUdestructor(spu);
+        if (flags) RAMdestructor(ram);
+
         return spu.error;
     }
 
