@@ -1,4 +1,4 @@
-// COMMAND SET VERSION 12
+// COMMAND SET VERSION 13
 
 // DEF_COMMAND(name, num, hasArg, code) 
 
@@ -119,8 +119,15 @@ DEF_COMMAND(COS, 21, false,
 
     RETURN_ERROR(PUSH(cos(a.value)));
 })
-DEF_COMMAND(VAR, 22, false, {})
-DEF_COMMAND(DRAW, 23, false, 
+DEF_COMMAND(FLR, 22, false, 
+{
+    StackElementResult a = POP();
+    RETURN_ERROR(a.error);
+
+    RETURN_ERROR(PUSH(floor(a.value)));
+})
+DEF_COMMAND(VAR, 23, false, {})
+DEF_COMMAND(DRAW, 24, false, 
 {
     for (size_t y = 0; y < spu->ram->height; y++)
     {
