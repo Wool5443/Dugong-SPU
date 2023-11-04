@@ -34,6 +34,8 @@ struct ArgResult
 
 ArgResult _getArg(SPU* spu, byte command);
 
+ErrorCode _drawRam(SPU* spu);
+
 ErrorCode Run(SPU* spu)
 {
     MyAssertSoft(spu, ERROR_NULLPTR);
@@ -178,4 +180,21 @@ ArgResult _getArg(SPU* spu, byte command)
     result.error = EVERYTHING_FINE;
 
     return result;
+}
+
+ErrorCode _drawRam(SPU* spu)
+{
+    for (size_t y = 0; y < spu->ram->height; y++)
+    {
+        for (size_t x = 0; x < spu->ram->width; x++)
+        {
+            if (spu->ram->data[y * spu->ram->width + x + spu->ram->vars])
+                putchar('#');
+            else
+                putchar('.');
+        }
+        putchar('\n');
+    }
+
+    return EVERYTHING_FINE;
 }

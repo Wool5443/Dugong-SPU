@@ -1,4 +1,4 @@
-// COMMAND SET VERSION 13
+// COMMAND SET VERSION 14
 
 // DEF_COMMAND(name, num, hasArg, code) 
 
@@ -6,18 +6,6 @@
 #define PUSH_CALL(val) Push(spu->callStack, val)
 #define POP()          Pop (spu->stack)
 #define POP_CALL()     Pop (spu->callStack)
-
-#define TWO_ARG_COMMAND(name, num, operation)               \
-DEF_COMMAND(name, num, false,                               \
-{                                                           \
-    StackElementResult b = POP();                           \
-    RETURN_ERROR(b.error);                                  \
-                                                            \
-    StackElementResult a = POP();                           \
-    RETURN_ERROR(a.error);                                  \
-                                                            \
-    RETURN_ERROR(PUSH(a.value operation b.value));          \
-})
 
 #define JUMP_COMMAND(name, num, comparison)                 \
 DEF_COMMAND(name,  num, true,                               \
@@ -92,12 +80,46 @@ DEF_COMMAND(OUT, 14, false,
 
     printf("%lg\n", res.value);
 })
+DEF_COMMAND(ADD, 15, false,
+{
+    StackElementResult b = POP();
+    RETURN_ERROR(b.error);
 
-TWO_ARG_COMMAND(ADD, 15, +)
-TWO_ARG_COMMAND(SUB, 16, -)
-TWO_ARG_COMMAND(MUL, 17, *)
-TWO_ARG_COMMAND(DIV, 18, /)
+    StackElementResult a = POP();
+    RETURN_ERROR(a.error);
 
+    RETURN_ERROR(PUSH(a.value + b.value));
+})
+DEF_COMMAND(SUB, 16, false,
+{
+    StackElementResult b = POP();
+    RETURN_ERROR(b.error);
+
+    StackElementResult a = POP();
+    RETURN_ERROR(a.error);
+
+    RETURN_ERROR(PUSH(a.value - b.value));
+})
+DEF_COMMAND(MUL, 17, false,
+{
+    StackElementResult b = POP();
+    RETURN_ERROR(b.error);
+
+    StackElementResult a = POP();
+    RETURN_ERROR(a.error);
+
+    RETURN_ERROR(PUSH(a.value * b.value));
+})
+DEF_COMMAND(DIV, 18, false,
+{
+    StackElementResult b = POP();
+    RETURN_ERROR(b.error);
+
+    StackElementResult a = POP();
+    RETURN_ERROR(a.error);
+
+    RETURN_ERROR(PUSH(a.value / b.value));
+})
 DEF_COMMAND(SQRT, 19, false,
 {
     StackElementResult a = POP();
@@ -126,20 +148,17 @@ DEF_COMMAND(FLR, 22, false,
 
     RETURN_ERROR(PUSH(floor(a.value)));
 })
-DEF_COMMAND(VAR, 23, false, {})
-DEF_COMMAND(DRAW, 24, false, 
+DEF_COMMAND(CEIL, 23, false, 
 {
-    for (size_t y = 0; y < spu->ram->height; y++)
-    {
-        for (size_t x = 0; x < spu->ram->width; x++)
-        {
-            if (spu->ram->data[y * spu->ram->width + x + spu->ram->vars])
-                putchar('#');
-            else
-                putchar('.');
-        }
-        putchar('\n');
-    }
+    StackElementResult a = POP();
+    RETURN_ERROR(a.error);
+
+    RETURN_ERROR(PUSH(ceil(a.value)));
+})
+DEF_COMMAND(VAR, 24, false, {})
+DEF_COMMAND(DRAW, 25, false, 
+{
+    RETURN_ERROR(_drawRam(spu));
 })
 DEF_COMMAND(HLT, 0, false, { return EVERYTHING_FINE; })
 
@@ -148,5 +167,4 @@ DEF_COMMAND(HLT, 0, false, { return EVERYTHING_FINE; })
 #undef PUSH_CALL
 #undef POP_CALL
 
-#undef TWO_ARG_COMMAND
 #undef JUMP_COMMAND

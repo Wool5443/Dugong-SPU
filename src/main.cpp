@@ -67,7 +67,7 @@ int main(int argc, const char* const argv[])
     {
         fprintf(stderr, "%s!!!\n", ERROR_CODE_NAMES[spu.error]);
         free(codeArray);
-        if (flags) RAMdestructor(ram);
+        if (flags) RAMdestructor(ram.value);
 
         return spu.error;
     }
@@ -77,8 +77,8 @@ int main(int argc, const char* const argv[])
     {
         fprintf(stderr, "%s!!!\n", ERROR_CODE_NAMES[runError]);
         free(codeArray);
-        SPUdestructor(spu);
-        if (flags) RAMdestructor(ram);
+        SPUdestructor(spu.value);
+        if (flags) RAMdestructor(ram.value);
 
         return spu.error;
     }
