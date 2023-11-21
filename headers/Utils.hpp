@@ -33,7 +33,7 @@ enum ErrorCode
     ERROR_INDEX_OUT_OF_BOUNDS, ERROR_NO_MEMORY, ERROR_NO_COMPARATOR, ERROR_BAD_SIZE,
     ERROR_BAD_VALUE, ERROR_DEAD_CANARY, ERROR_BAD_HASH, ERROR_ZERO_DIVISION,
     ERROR_SYNTAX, ERROR_WRONG_LABEL_SIZE, ERROR_TOO_MANY_LABELS,
-    ERROR_NOT_FOUND, ERROR_BAD_FIELDS,
+    ERROR_NOT_FOUND, ERROR_BAD_FIELDS, ERROR_BAD_TREE, ERROR_NO_ROOT
 };
 
 static const char* ERROR_CODE_NAMES[] =
@@ -42,8 +42,10 @@ static const char* ERROR_CODE_NAMES[] =
     "ERROR_INDEX_OUT_OF_BOUNDS", "ERROR_NO_MEMORY", "ERROR_NO_COMPARATOR", "ERROR_BAD_SIZE",
     "ERROR_BAD_VALUE", "ERROR_DEAD_CANARY", "ERROR_BAD_HASH", "ERROR_ZERO_DIVISION",
     "ERROR_SYNTAX", "ERROR_WRONG_LABEL_SIZE", "ERROR_TOO_MANY_LABELS",
-    "ERROR_NOT_FOUND", "ERROR_BAD_FIELDS",
+    "ERROR_NOT_FOUND", "ERROR_BAD_FIELDS", "ERROR_BAD_TREE", "ERROR_NO_ROOT"
 };
+
+static const size_t SIZET_POISON = (size_t)-1;
 
 #define RETURN_ERROR(error)                                                                                                 \
 do                                                                                                                          \
@@ -186,6 +188,14 @@ bool CheckInput(FILE* where);
  * @param color - @see Color
  */
 void SetConsoleColor(FILE* where, enum Color color);
+
+/**
+ * @brief Get the file size.
+ * 
+ * @param path to the file.
+ * @return size.
+ */
+size_t GetFileSize(const char* path);
 
 unsigned int CalculateHash(const void *key, size_t len, unsigned int seed);
 

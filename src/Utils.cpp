@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include <time.h>
 #include <string.h>
+#include <sys/stat.h>
 #include "Utils.hpp"
 
 const double ABSOLUTE_TOLERANCE = 1e-5;
@@ -42,6 +43,16 @@ bool CheckInput(FILE* where)
 void SetConsoleColor(FILE* where, enum Color color)
 {
 	fprintf(where, "\033[0;%dm", (int)color);
+}
+
+size_t GetFileSize(const char* path)
+{
+    MyAssertHard(path, ERROR_NULLPTR, );
+
+    struct stat result = {};
+    stat(path, &result);
+
+    return (size_t)result.st_size;
 }
 
 #define mmix(h, k) do { k *= m; k ^= k >> r; k *= m; h *= m; h ^= k; } while (0)
