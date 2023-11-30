@@ -29,7 +29,8 @@ void Swap(void* a, void* b, size_t size)
 
 void ClearBuffer(FILE* where)
 {
-	while (fgetc(where) != '\n') { ; }
+	int c = fgetc(where);
+	while (c != '\n' && c != EOF) { c = fgetc(where); }
 }
 
 bool CheckInput(FILE* where)
